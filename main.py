@@ -7,14 +7,15 @@ from sklearn.linear_model import LinearRegression
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.preprocessing import StandardScaler
 from sklearn.ensemble import RandomForestClassifier
-from sklearn.metrics import accuracy_score, confusion_matrix
+from sklearn.metrics import accuracy_score, confusion_matrix, classification_report
 from sklearn.tree import DecisionTreeClassifier
+from sklearn.model_selection import GridSearchCV
 
 # Importando a base
-diabetes_df = pd.read_csv("datasets\diabetes.csv")
+diabetes_df = pd.read_csv("./datasets/diabetes.csv")
 
 # Análise de dados do Dataset
-print(f'Primeiros dados: \n{diabetes_df.head()}')
+print(f'Primeiros dados: \n{diabetes_df.head()}\n')
 # print(f'Informações dataset: \n{diabetes_df.info()}')
 # print(f'Shape dataset: {diabetes_df.shape}')
 # print(f'Describe dataset: \n{diabetes_df.describe()}')
@@ -31,7 +32,7 @@ for column in invalid_columns:
 for col in invalid_columns:
   zeros = (diabetes_df[col] == 0).sum()
   total = diabetes_df.shape[0]
-  print(f"{col}: {zeros} zeros ({(zeros / total) * 100:.2f}%)")
+  # print(f"{col}: {zeros} zeros ({(zeros / total) * 100:.2f}%)")
 
 # Análise de dados das pessoas com mais e menos gravidez
 # print(f'Maior parteira: \n{diabetes_df[diabetes_df['Pregnancies'] == 17]}')
@@ -50,10 +51,10 @@ for col in invalid_columns:
 # print(f'Dataset com a nova feature: \n{diabetes_df}')
 
 # Analisando correlação dos dados
-correlation_matrix = diabetes_df.select_dtypes(include=['float64', 'int']).corr().round(2)
-fig, ax = plt.subplots(figsize=(8,8))    
-sb.heatmap(data=correlation_matrix, annot=True, linewidths=.5, ax=ax)
-plt.show();
+# correlation_matrix = diabetes_df.select_dtypes(include=['float64', 'int']).corr().round(2)
+# fig, ax = plt.subplots(figsize=(8,8))    
+# sb.heatmap(data=correlation_matrix, annot=True, linewidths=.5, ax=ax)
+# plt.show();
 
 # Observações sobre a corelação
 # • As colunas não possuem correlações fortes entre si e nem com a target
@@ -120,22 +121,35 @@ plt.show();
 
 # df_padronizado = diabetes_df.astype(float)
 
-# Treinarmento do Modelo
-y = diabetes_df['Outcome'];
-x = diabetes_df.drop('Outcome', axis=1)
+# Undersample do Dataset
+class_no_diabetes = diabetes_df[diabetes_df['Outcome'] == 0]
+class_has_diabetes = diabetes_df[diabetes_df['Outcome'] == 1]
+
+# Undersample da classe 0 para ter o mesmo número de registros da classe de casos com diabetes
+class_no_diabetes_under = class_no_diabetes.sample(len(class_has_diabetes), random_state=42)
+
+# Juntar as duas classes balanceadas
+diabetes_df_undersampled = pd.concat([class_no_diabetes_under, class_has_diabetes])
+
+# Embaralhar o dataset
+diabetes_df_undersampled = diabetes_df_undersampled.sample(frac=1, random_state=42).reset_index(drop=True)
+
+# Treinamento do Modelo
+y = diabetes_df_undersampled['Outcome'];
+x = diabetes_df_undersampled.drop('Outcome', axis=1)
 x_train, x_test, y_train, y_test  = train_test_split(x, y, test_size=0.2, random_state=42, stratify=y)
 scaler = StandardScaler()
-X_train_padronizado = scaler.fit_transform(x_train)
-X_test_padronizado = scaler.transform(x_test)
+X_train_standardized = scaler.fit_transform(x_train)
+X_test_standardized = scaler.transform(x_test)
 
 # KNN
 # knn_model = KNeighborsClassifier(n_neighbors=5);
-# print(f'Shape treino X: \n{X_test_padronizado.shape}')
+# print(f'Shape treino X: \n{X_test_standardized.shape}')
 # print(f'Shape test X: \n{y_test.shape}')
 # knn_model.fit(x_train, y_train)
 # x_test_first_person = x_test.iloc[[1]]
 # y_test_first_person = y_test.iloc[[1]]
-# predict = modelo.predict(X_test_padronizado)
+# predict = modelo.predict(X_test_standardized)
 # print('Valor real: ', y_test_example)
 # print('Valor predito: ', predict)
 # error = []
@@ -143,8 +157,8 @@ X_test_padronizado = scaler.transform(x_test)
 # Calculando os erros de valores K entre 1 e 10
 # for i in range(1, 10): #range de tentativas para k
 #     knn = KNeighborsClassifier(n_neighbors=i) # aqui definimos  o k
-#     knn.fit(X_train_padronizado, y_train) # treinando o algoritmo para encontrar o erro
-#     pred_i = knn.predict(X_test_padronizado) # armazenando as previsões
+#     knn.fit(X_train_standardized, y_train) # treinando o algoritmo para encontrar o erro
+#     pred_i = knn.predict(X_test_standardized) # armazenando as previsões
 #     error.append(np.mean(pred_i != y_test)) # armazenando o valor do erro médio na lista de erros
 
 # plt.figure(figsize=(12, 6))
@@ -155,31 +169,46 @@ X_test_padronizado = scaler.transform(x_test)
 # plt.ylabel('Mean Error')
 # plt.show()
 
-# Random Forest Classifier
-random_forest_model = RandomForestClassifier(random_state=42)
-
-# Treinando o modelo
-random_forest_model.fit(X_train_padronizado, y_train)
-predict = random_forest_model.predict(X_test_padronizado)
-
-# Acurácia com o modelo de Random Forest: 0.77
-print('Acurácia Random Forest: ', accuracy_score(y_test, predict))
-print('Matriz de confusão Random Forest: ', confusion_matrix(y_test, predict))
-
-# Observações: 
-# • Através da matriz de confusão no modelo Random Forest, foi possível concluir que o modelo tem dificuldade em classificar casos de diabetes como verdadeiros.
-# • Após substituirmos os valores zerados em colunas pela média, foi possível aumentar a acurácia de 75% para 77%
-
 # Decision Tree Classifier
 decision_tree_model = DecisionTreeClassifier(random_state=42, class_weight='balanced')
 
 # Treinando o modelo
-decision_tree_model.fit(X_train_padronizado, y_train)
-predict = decision_tree_model.predict(X_test_padronizado)
+decision_tree_model.fit(X_train_standardized, y_train)
+predict = decision_tree_model.predict(X_test_standardized)
 
 # Acurácia com o modelo de Decision Tree: 0.72
-print('Acurácia Decision Tree: ', accuracy_score(y_test, predict))
-print('Matriz de confusão Decision Tree: ', confusion_matrix(y_test, predict))
+# print('Acurácia Decision Tree: ', accuracy_score(y_test, predict))
+# print('Matriz de confusão Decision Tree: ', confusion_matrix(y_test, predict))
 
-# Observação: mesmo com um modelo diferente, ainda foi possível concluir que o modelo tem 
-# dificuldade em classificar casos de diabetes como verdadeiros.
+# Observação: O modelo tem dificuldades em classificar casos de diabetes como verdadeiros.
+
+# Random Forest Classifier
+random_forest_model = RandomForestClassifier(random_state=42)
+
+# Treinando o modelo
+random_forest_model.fit(X_train_standardized, y_train)
+predict = random_forest_model.predict(X_test_standardized)
+
+# Acurácia com o modelo de Random Forest: 0.77
+print(f'Acurácia Random Forest: {accuracy_score(y_test, predict)}\n')
+print(f'Matriz de confusão:\n{confusion_matrix(y_test, predict)}\n')
+
+# Observações: 
+# • Através da matriz de confusão no modelo Random Forest, foi possível concluir que o modelo tem dificuldade em classificar casos de diabetes como verdadeiros.
+# • Após substituirmos os valores zerados em colunas pela média, foi possível aumentar a acurácia de 75% para 77%
+# • Adicionado o class_weight='balanced' para prever melhor a classe minoritária (casos de diabetes)
+# • O modelo generalizou melhor os resultados após adicionar max_depth=10
+# • Com undersample, o modelo apresentou uma acurácia, taxa de f1-score e recall melhores 
+# porém a base é menor e a capacidade de generalização foi reduzida
+
+# Análise de importância das colunas com o modelo
+# importances = random_forest_model.feature_importances_
+# for feature, importance in zip(x.columns, importances):
+#   print(f"{feature}: importance")
+
+y_pred = random_forest_model.predict(X_test_standardized)
+print(f'Classification Report:\n{classification_report(y_test, y_pred)}')
+
+# Observações com Classification Report:
+# • O modelo tem fraco desempenho com a classe 1 (casos de diabetes)
+# • Necessidade de melhorar o desempenho da classe minoritária
