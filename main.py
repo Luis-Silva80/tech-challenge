@@ -3,13 +3,13 @@ import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sb
 from sklearn.model_selection import train_test_split
-from sklearn.linear_model import LinearRegression
+from sklearn.linear_model import LinearRegression, LogisticRegression
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.preprocessing import StandardScaler
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import accuracy_score, confusion_matrix, classification_report
 from sklearn.tree import DecisionTreeClassifier
-from sklearn.model_selection import GridSearchCV
+from sklearn.model_selection import GridSearchCV, cross_val_score
 
 # Importando a base
 diabetes_df = pd.read_csv("./datasets/diabetes.csv")
@@ -125,8 +125,14 @@ for col in invalid_columns:
 class_no_diabetes = diabetes_df[diabetes_df['Outcome'] == 0]
 class_has_diabetes = diabetes_df[diabetes_df['Outcome'] == 1]
 
+
 # Undersample da classe 0 para ter o mesmo número de registros da classe de casos com diabetes
 class_no_diabetes_under = class_no_diabetes.sample(len(class_has_diabetes), random_state=42)
+
+#Oversample da classe 1 para ter o mesmo numero de registros da classe de casos com não diabetes
+class_has_diabetes_over = class_has_diabetes.sample(len(class_no_diabetes), random_state=42, replace=True)
+df_test_over = pd.concat([class_no_diabetes, class_has_diabetes_over], axis=0)
+# print(f'---info da base oversampleada: \n{df_test_over['Outcome'].value_counts()}')
 
 # Juntar as duas classes balanceadas
 diabetes_df_undersampled = pd.concat([class_no_diabetes_under, class_has_diabetes])
@@ -134,25 +140,40 @@ diabetes_df_undersampled = pd.concat([class_no_diabetes_under, class_has_diabete
 # Embaralhar o dataset
 diabetes_df_undersampled = diabetes_df_undersampled.sample(frac=1, random_state=42).reset_index(drop=True)
 
+# print(f'Visualizando df Undersample: \n{diabetes_df_undersampled.describe()}')
+# print(f'Count Outcome: \n{diabetes_df_undersampled['Outcome'].value_counts()}')
+
 # Treinamento do Modelo
-y = diabetes_df_undersampled['Outcome'];
-x = diabetes_df_undersampled.drop('Outcome', axis=1)
+y = df_test_over['Outcome'];
+x = df_test_over.drop('Outcome', axis=1)
 x_train, x_test, y_train, y_test  = train_test_split(x, y, test_size=0.2, random_state=42, stratify=y)
 scaler = StandardScaler()
 X_train_standardized = scaler.fit_transform(x_train)
 X_test_standardized = scaler.transform(x_test)
 
+#Logistic Regression
+logistic_regression = LogisticRegression(random_state=42)
+logistic_regression.fit(X_train_standardized, y_train)
+predict_logistic = logistic_regression.predict(X_test_standardized)
+print('Acurácia Logistic Regression: ', accuracy_score(y_test, predict_logistic))
+print('Matriz de confusão Logistic Regression: ', confusion_matrix(y_test, predict_logistic))
+print(f'Classification Report Logistic Regression:\n{classification_report(y_test, predict_logistic)}')
+
 # KNN
 # knn_model = KNeighborsClassifier(n_neighbors=5);
 # print(f'Shape treino X: \n{X_test_standardized.shape}')
 # print(f'Shape test X: \n{y_test.shape}')
-# knn_model.fit(x_train, y_train)
-# x_test_first_person = x_test.iloc[[1]]
-# y_test_first_person = y_test.iloc[[1]]
-# predict = modelo.predict(X_test_standardized)
-# print('Valor real: ', y_test_example)
-# print('Valor predito: ', predict)
+# knn_model.fit(X_train_standardized, y_train)
+# x_test_first_person = x_test.iloc[[70]]
+# y_test_first_person = y_test.iloc[[70]]
+# predict = knn_model.predict(X_test_standardized)
+# predict_one_value = knn_model.predict(x_test_first_person)
+# print('Valor real: ', y_test_first_person)
+# print('Valor predito: ', predict_one_value)
 # error = []
+# print('Acurácia KNN: ', accuracy_score(y_test, predict))
+# print('Matriz de confusão KNN: ', confusion_matrix(y_test, predict))
+# print(f'Classification Report KNN:\n{classification_report(y_test, predict)}')
 
 # Calculando os erros de valores K entre 1 e 10
 # for i in range(1, 10): #range de tentativas para k
@@ -170,7 +191,7 @@ X_test_standardized = scaler.transform(x_test)
 # plt.show()
 
 # Decision Tree Classifier
-decision_tree_model = DecisionTreeClassifier(random_state=42, class_weight='balanced')
+decision_tree_model = DecisionTreeClassifier(random_state=42)
 
 # Treinando o modelo
 decision_tree_model.fit(X_train_standardized, y_train)
@@ -179,6 +200,7 @@ predict = decision_tree_model.predict(X_test_standardized)
 # Acurácia com o modelo de Decision Tree: 0.72
 # print('Acurácia Decision Tree: ', accuracy_score(y_test, predict))
 # print('Matriz de confusão Decision Tree: ', confusion_matrix(y_test, predict))
+# print(f'Classification Report Decision Tree:\n{classification_report(y_test, predict)}')
 
 # Observação: O modelo tem dificuldades em classificar casos de diabetes como verdadeiros.
 
@@ -187,11 +209,13 @@ random_forest_model = RandomForestClassifier(random_state=42)
 
 # Treinando o modelo
 random_forest_model.fit(X_train_standardized, y_train)
-predict = random_forest_model.predict(X_test_standardized)
+predict_random_forest = random_forest_model.predict(X_test_standardized)
 
 # Acurácia com o modelo de Random Forest: 0.77
-print(f'Acurácia Random Forest: {accuracy_score(y_test, predict)}\n')
-print(f'Matriz de confusão:\n{confusion_matrix(y_test, predict)}\n')
+print(f'\nAcurácia Random Forest: {accuracy_score(y_test, predict_random_forest)}\n')
+print(f'Matriz de confusão:\n{confusion_matrix(y_test, predict_random_forest)}\n')
+print(f'Classification Report RandomForest:\n{classification_report(y_test, predict_random_forest)}')
+
 
 # Observações: 
 # • Através da matriz de confusão no modelo Random Forest, foi possível concluir que o modelo tem dificuldade em classificar casos de diabetes como verdadeiros.
@@ -206,9 +230,35 @@ print(f'Matriz de confusão:\n{confusion_matrix(y_test, predict)}\n')
 # for feature, importance in zip(x.columns, importances):
 #   print(f"{feature}: importance")
 
-y_pred = random_forest_model.predict(X_test_standardized)
-print(f'Classification Report:\n{classification_report(y_test, y_pred)}')
+# y_pred = random_forest_model.predict(X_test_standardized)
+# print(f'Classification Report:\n{classification_report(y_test, y_pred)}')
 
 # Observações com Classification Report:
 # • O modelo tem fraco desempenho com a classe 1 (casos de diabetes)
 # • Necessidade de melhorar o desempenho da classe minoritária
+
+#Testando validação cruzada
+scores = cross_val_score(random_forest_model, x, y, cv=10, scoring='accuracy')
+
+# 5. Imprimir os resultados
+print("Scores da validação cruzada (10 folds):")
+print(scores)
+
+param_grid = {
+    'n_estimators': [50, 100, 150],  # Número de árvores
+    'max_depth': [5, 10, None],      # Profundidade máxima das árvores (None = sem limite)
+    'min_samples_split': [2, 5, 10]  # Mínimo de amostras para fazer uma divisão
+}
+
+grid_search = GridSearchCV(estimator=random_forest_model, param_grid=param_grid, cv=5, scoring='accuracy', n_jobs=-1)
+
+# print("Iniciando a busca em grade (Grid Search)...")
+# # O .fit() fará o treinamento de todas as combinações de parâmetros
+# grid_search.fit(x, y)
+
+# # 4. Exibir os melhores resultados
+# print("\nMelhores hiperparâmetros encontrados:")
+# print(grid_search.best_params_)
+
+# print("\nMelhor score de validação cruzada:")
+# print(f"{grid_search.best_score_:.4f}")
