@@ -302,7 +302,7 @@ x_train, x_test, y_train, y_test = train_test_split(
     stratify=y
 )
 
-# Etapa: 22 Análise com KNN
+# Etapa 22: Análise com KNN
 print('Etapa: 22 Análise com KNN')
 knn_model = KNeighborsClassifier(n_neighbors=5)
 print(f'Shape da base de treino X: {x_train.shape}')
