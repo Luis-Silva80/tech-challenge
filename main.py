@@ -116,13 +116,13 @@ plt.ylabel('DiabetesPedigreeFunction')
 plt.show()
 
 # Etapa 12: Treinamento do Modelo com o Dataframe
-print('Etapa 11: Treinamento do Modelo com o Dataframe\n')
+print('Etapa 12: Treinamento do Modelo com o Dataframe\n')
 y = diabetes_df['Outcome']
 x = diabetes_df.drop('Outcome', axis=1)
 x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.2, random_state=42, stratify=y)
 
 # Etapa: 13 Análise com KNN
-print('Etapa: 12 Análise com KNN\n')
+print('Etapa: 13 Análise com KNN\n')
 knn_model = KNeighborsClassifier(n_neighbors=5)
 print(f'Shape da base de treino X: {x_train.shape}')
 print(f'Shape da base teste Y: {y_test.shape}\n')
@@ -155,7 +155,7 @@ plt.ylabel('Mean Error')
 plt.show()
 
 # Etapa 14: Análise com Decision Tree
-print('Etapa 13: Análise com Decision Tree')
+print('Etapa 14: Análise com Decision Tree')
 decision_tree_model = DecisionTreeClassifier(random_state=42)
 
 # 14.1: Treinando o modelo
@@ -168,7 +168,7 @@ print(f'Matriz de confusão Decision Tree:\n{confusion_matrix(y_test, predict)}\
 print(f'Classification Report Decision Tree:\n{classification_report(y_test, predict)}\n')
 
 # Etapa 15: Análise com Random Forest
-print(' Etapa 14: Análise com Random Forest')
+print('Etapa 15: Análise com Random Forest')
 random_forest_model = RandomForestClassifier(random_state=42)
 
 # 15.1: Treinando o modelo
@@ -180,8 +180,8 @@ print(f'\nAcurácia Random Forest: {accuracy_score(y_test, predict_random_forest
 print(f'Matriz de confusão:\n{confusion_matrix(y_test, predict_random_forest)}\n')
 print(f'Classification Report RandomForest:\n{classification_report(y_test, predict_random_forest)}')
 
-# Etapa 15: Identificar colunas com valores inválidos
-print('Etapa 15: Identificar colunas com valores inválidos\n')
+# Etapa 16: Identificar colunas com valores inválidos
+print('Etapa 16: Identificar colunas com valores inválidos\n')
 invalid_columns = [
     'Glucose',
     'BloodPressure',
@@ -190,14 +190,14 @@ invalid_columns = [
     'BMI'
 ]
 
-# 15.1: Colunas com valores inválidos
+# 16.1: Colunas com valores inválidos
 print('\nColunas com valores inválidos')
 for col in invalid_columns:
     zeros = (diabetes_df[col] == 0).sum()
     total = diabetes_df.shape[0]
     print(f'{col}: {zeros} valores inválidos ({(zeros / total) * 100:.2f}%)')
 
-# 15.2: Colunas com valores inválidos após substituir pela média
+# 16.2: Colunas com valores inválidos após substituir pela média
 print('\nColunas com valores inválidos após substituir pela média')
 for col in invalid_columns:
     mean_value = diabetes_df[diabetes_df[col] != 0][col].mean()
@@ -206,28 +206,28 @@ for col in invalid_columns:
     total = diabetes_df.shape[0]
     print(f'{col}: {zeros} valores inválidos ({(zeros / total) * 100:.2f}%)')
 
-# Etapa 16: Undersample do Dataset
-print('\nEtapa 16: Undersample do Dataset\n')
+# Etapa 17: Undersample do Dataset
+print('\nEtapa 17: Undersample do Dataset\n')
 class_no_diabetes = diabetes_df[diabetes_df['Outcome'] == 0]
 class_has_diabetes = diabetes_df[diabetes_df['Outcome'] == 1]
 
-# 16.1: Undersample da classe 0 para ter o mesmo número de registros da classe 1
+# 17.1: Undersample da classe 0 para ter o mesmo número de registros da classe 1
 class_no_diabetes_under = class_no_diabetes.sample(len(class_has_diabetes), random_state=42)
 
-# 16.2: Juntar as duas classes balanceadas
+# 17.2: Juntar as duas classes balanceadas
 diabetes_df_undersampled = pd.concat([class_no_diabetes_under, class_has_diabetes])
 
-# 16.3: Embaralhar os dados dentro dataset
+# 17.3: Embaralhar os dados dentro dataset
 diabetes_df_undersampled = diabetes_df_undersampled.sample(
     frac=1,
     random_state=42
 ).reset_index(drop=True)
 
-# 16.4: Análise dos dados com o tratamento
+# 17.4: Análise dos dados com o tratamento
 print(f'Análise do Dataframe Undersampled: \n{diabetes_df_undersampled.describe()}')
 print(f'Contagem da Target: \n{diabetes_df_undersampled['Outcome'].value_counts()}\n')
 
-# 16.5: Treinamento do Modelo Undersampled
+# 17.5: Treinamento do Modelo Undersampled
 y = diabetes_df_undersampled['Outcome']
 x = diabetes_df_undersampled.drop('Outcome', axis=1)
 x_train, x_test, y_train, y_test = train_test_split(
@@ -238,24 +238,24 @@ x_train, x_test, y_train, y_test = train_test_split(
     stratify=y
 )
 
-# Etapa: 17 Análise com KNN
-print('Etapa: 17 Análise com KNN')
+# Etapa: 18 Análise com KNN
+print('Etapa: 18 Análise com KNN')
 knn_model = KNeighborsClassifier(n_neighbors=5)
 print(f'Shape da base de treino X: {x_train.shape}')
 print(f'Shape da base teste Y: {y_test.shape}\n')
 
-# 17.1: Treinando o modelo
+# 18.1: Treinando o modelo
 knn_model.fit(x_train, y_train)
 
-# 17.2: Previsão do primeiro dado do dataset
+# 18.2: Previsão do primeiro dado do dataset
 predict = knn_model.predict(x_test)
 
-# 17.3: Análise da previsão
+# 18.3: Análise da previsão
 print(f'Acurácia KNN: {accuracy_score(y_test, predict)}\n')
 print(f'Matriz de confusão KNN:\n{confusion_matrix(y_test, predict)}\n')
 print(f'Relatório de Classificação: \n{classification_report(y_test, predict)}\n')
 
-# 17.4: Calculando os erros de valores K entre 1 e 10
+# 18.4: Calculando os erros de valores K entre 1 e 10
 error = []
 for i in range(1, 10):
     knn = KNeighborsClassifier(n_neighbors=i)
@@ -263,7 +263,7 @@ for i in range(1, 10):
     pred_i = knn.predict(x_test)
     error.append(np.mean(pred_i != y_test))
 
-# 17.5: Exibição das métricas para avaliação
+# 18.5: Exibição das métricas para avaliação
 plt.figure(figsize=(12, 6))
 plt.plot(range(1, 10), error, color='red', linestyle='dashed', marker='o', markerfacecolor='blue', markersize=10)
 plt.title('Error Rate K Value')
@@ -271,56 +271,56 @@ plt.xlabel('K Value')
 plt.ylabel('Mean Error')
 plt.show()
 
-# Etapa 18: Análise com Decision Tree
-print('Etapa 18: Análise com Decision Tree')
+# Etapa 19: Análise com Decision Tree
+print('Etapa 19: Análise com Decision Tree')
 decision_tree_model = DecisionTreeClassifier(random_state=42)
 
-# 18.1: Treinando o modelo
+# 19.1: Treinando o modelo
 decision_tree_model.fit(x_train, y_train)
 predict = decision_tree_model.predict(x_test)
 
-# 18.2: Acurácia com o modelo de Decision Tree
+# 19.2: Acurácia com o modelo de Decision Tree
 print(f'Acurácia Decision Tree: {accuracy_score(y_test, predict)}\n')
 print(f'Matriz de confusão Decision Tree:\n{confusion_matrix(y_test, predict)}\n')
 print(f'Relatório de Classificação:\n{classification_report(y_test, predict)}\n')
 
-# Etapa 19: Análise com Random Forest
-print('Etapa 19: Análise com Random Forest')
+# Etapa 20: Análise com Random Forest
+print('Etapa 20: Análise com Random Forest')
 random_forest_model = RandomForestClassifier(random_state=42)
 
-# 19.1: Treinando o modelo
+# 20.1: Treinando o modelo
 random_forest_model.fit(x_train, y_train)
 predict_random_forest = random_forest_model.predict(x_test)
 
-# 19.2: Acurácia com o modelo de Random Forest
+# 20.2: Acurácia com o modelo de Random Forest
 print(f'\nAcurácia Random Forest: {accuracy_score(y_test, predict_random_forest)}\n')
 print(f'Matriz de confusão:\n{confusion_matrix(y_test, predict_random_forest)}\n')
 print(f'Relatório de Classificação:\n{classification_report(y_test, predict_random_forest)}')
 
-# Etapa 20: Oversample do Dataset
-print('Etapa 20: Oversample do Dataset\n')
+# Etapa 21: Oversample do Dataset
+print('Etapa 21: Oversample do Dataset\n')
 
-# 20.1: Oversample da classe 1 para ter o mesmo numero de registros da classe 0
+# 21.1: Oversample da classe 1 para ter o mesmo numero de registros da classe 0
 class_has_diabetes_over = class_has_diabetes.sample(
     len(class_no_diabetes),
     random_state=42,
     replace=True
 )
 
-# 20.2: Juntar as duas classes balanceadas
+# 21.2: Juntar as duas classes balanceadas
 diabetes_df_oversampled = pd.concat([class_no_diabetes, class_has_diabetes_over], axis=0)
 
-# 20.3: Embaralhar os dados dentro dataset
+# 21.3: Embaralhar os dados dentro dataset
 diabetes_df_oversampled = diabetes_df_oversampled.sample(
     frac=1,
     random_state=42
 ).reset_index(drop=True)
 
-# 20.4: Análise dos dados com o tratamento
+# 21.4: Análise dos dados com o tratamento
 print(f'Análise do Dataframe Undersampled: \n{diabetes_df_undersampled.describe()}')
 print(f'Contagem da Target: \n{diabetes_df_undersampled['Outcome'].value_counts()}\n')
 
-# 20.5: Treinamento do Modelo Oversampled
+# 21.5: Treinamento do Modelo Oversampled
 y = diabetes_df_oversampled['Outcome']
 x = diabetes_df_oversampled.drop('Outcome', axis=1)
 x_train, x_test, y_train, y_test = train_test_split(
@@ -331,24 +331,24 @@ x_train, x_test, y_train, y_test = train_test_split(
     stratify=y
 )
 
-# Etapa: 21 Análise com KNN
-print('Etapa: 21 Análise com KNN')
+# Etapa: 22 Análise com KNN
+print('Etapa: 22 Análise com KNN')
 knn_model = KNeighborsClassifier(n_neighbors=5)
 print(f'Shape da base de treino X: {x_train.shape}')
 print(f'Shape da base teste Y: {y_test.shape}\n')
 
-# 21.1: Treinando o modelo
+# 22.1: Treinando o modelo
 knn_model.fit(x_train, y_train)
 
-# 21.2: Previsão do primeiro dado do dataset
+# 22.2: Previsão do primeiro dado do dataset
 predict = knn_model.predict(x_test)
 
-# 21.3: Análise da previsão
+# 22.3: Análise da previsão
 print(f'Acurácia KNN: {accuracy_score(y_test, predict)}\n')
 print(f'Matriz de confusão KNN:\n{confusion_matrix(y_test, predict)}\n')
 print(f'Relatório de Classificação: \n{classification_report(y_test, predict)}\n')
 
-# 21.4: Calculando os erros de valores K entre 1 e 10
+# 22.4: Calculando os erros de valores K entre 1 e 10
 error = []
 for i in range(1, 10):
     knn = KNeighborsClassifier(n_neighbors=i)
@@ -356,7 +356,7 @@ for i in range(1, 10):
     pred_i = knn.predict(x_test)
     error.append(np.mean(pred_i != y_test))
 
-# 21.5: Exibição das métricas para avaliação
+# 22.5: Exibição das métricas para avaliação
 plt.figure(figsize=(12, 6))
 plt.plot(range(1, 10), error, color='red', linestyle='dashed', marker='o', markerfacecolor='blue', markersize=10)
 plt.title('Error Rate K Value')
@@ -364,39 +364,39 @@ plt.xlabel('K Value')
 plt.ylabel('Mean Error')
 plt.show()
 
-# Etapa 22: Análise com Decision Tree
-print('Etapa 22: Análise com Decision Tree')
+# Etapa 23: Análise com Decision Tree
+print('Etapa 23: Análise com Decision Tree')
 decision_tree_model = DecisionTreeClassifier(random_state=42)
 
-# 22.1: Treinando o modelo
+# 23.1: Treinando o modelo
 decision_tree_model.fit(x_train, y_train)
 predict = decision_tree_model.predict(x_test)
 
-# 22.2: Acurácia com o modelo de Decision Tree
+# 23.2: Acurácia com o modelo de Decision Tree
 print(f'Acurácia Decision Tree: {accuracy_score(y_test, predict)}\n')
 print(f'Matriz de confusão Decision Tree:\n{confusion_matrix(y_test, predict)}\n')
 print(f'Relatório de Classificação:\n{classification_report(y_test, predict)}\n')
 
-# Etapa 23: Análise com Random Forest
-print('Etapa 23: Análise com Random Forest')
+# Etapa 24: Análise com Random Forest
+print('Etapa 24: Análise com Random Forest')
 random_forest_model = RandomForestClassifier(random_state=42)
 
-# 23.1: Treinando o modelo
+# 24.1: Treinando o modelo
 random_forest_model.fit(x_train, y_train)
 predict_random_forest = random_forest_model.predict(x_test)
 
-# 23.2: Acurácia com o modelo de Random Forest
+# 24.2: Acurácia com o modelo de Random Forest
 print(f'\nAcurácia Random Forest: {accuracy_score(y_test, predict_random_forest)}\n')
 print(f'Matriz de confusão:\n{confusion_matrix(y_test, predict_random_forest)}\n')
 print(f'Relatório de Classificação:\n{classification_report(y_test, predict_random_forest)}')
 
-# Etapa 24: Testando validação cruzada
-print('Etapa 24: Testando validação cruzada\n')
+# Etapa 25: Testando validação cruzada
+print('Etapa 25: Testando validação cruzada\n')
 scores = cross_val_score(random_forest_model, x, y, cv=10, scoring='accuracy')
 
-# 24.1: Scores da validação cruzada
+# 25.1: Scores da validação cruzada
 print("Scores da validação cruzada (10 folds):")
 print(scores)
 
-# 24.2: Média da validação
+# 25.2: Média da validação
 print(f'Média da validação: {scores.mean()}')
