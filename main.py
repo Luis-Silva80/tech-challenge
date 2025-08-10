@@ -33,12 +33,17 @@ print('Etapa 6: Padronizar todos os dados como float\n')
 diabetes_df = diabetes_df.astype(float)
 print(f'Dados como tipo float: \n{diabetes_df.head()}\n')
 
-# Etapa 7: Análise de dados de mulheres com mais e menos casos de gravidez
-print('Etapa 7: Análise de dados de mulheres com mais e menos casos de gravidez\n')
+# Etapa 7: Análise de dados de acordo gravidez e idade
+print('Etapa 7: Análise de dados de acordo gravidez e idade\n')
 preg_min = diabetes_df['Pregnancies'].min()
 preg_max = diabetes_df['Pregnancies'].max()
 print(f'Menor parteira: \n{diabetes_df[diabetes_df['Pregnancies'] == preg_min].iloc[0]}\n')
 print(f'Maior parteira: \n{diabetes_df[diabetes_df['Pregnancies'] == preg_max].iloc[0]}\n')
+
+age_min = diabetes_df['Age'].min()
+age_max = diabetes_df['Age'].max()
+print(f'Menor idade:\n{diabetes_df[diabetes_df['Age'] == age_min].iloc[0]}\n')
+print(f'Maior idade: \n{diabetes_df[diabetes_df['Age'] == age_max].iloc[0]}\n')
 
 # Etapa 8: Analisando correlação dos dados
 print('Etapa 8: Analisando correlação dos dados\n')
@@ -61,59 +66,22 @@ plt.hist(diabetes_df['Age'], bins=10, edgecolor='black', alpha=0.7)
 plt.show()
 
 # Etapa 11: Análise Boxplot do Target com as colunas
-print('Etapa 11: Análise Boxplot do Target com as colunas\n')
+colunas = ['Pregnancies', 'Glucose', 'BloodPressure', 'SkinThickness', 'Insulin', 'BMI', 'DiabetesPedigreeFunction']
 
-# 11.1: Target com Pregnancies
-plt.figure(figsize=(10, 6))
-sb.boxplot(x='Outcome', y='Pregnancies', data=diabetes_df)
-plt.title('Pregnancies')
-plt.xlabel('Outcome')
-plt.ylabel('Pregnancies')
+# 11.1: Criar figura e eixos
+fig, axes = plt.subplots(3, 3, figsize=(15, 10))  # 3 linhas x 3 colunas
+axes = axes.flatten()  # Facilita indexar
 
-# 11.2: Target com Glucose
-plt.figure(figsize=(10, 6))
-sb.boxplot(x='Outcome', y='Glucose', data=diabetes_df)
-plt.title('Glucose')
-plt.xlabel('Outcome')
-plt.ylabel('Glucose')
+# 11.2: Loop para criar cada boxplot
+for i, coluna in enumerate(colunas):
+    sb.boxplot(x='Outcome', y=coluna, data=diabetes_df, ax=axes[i])
 
-# 11.3: Target com BloodPressure
-plt.figure(figsize=(10, 6))
-sb.boxplot(x='Outcome', y='BloodPressure', data=diabetes_df)
-plt.title('BloodPressure')
-plt.xlabel('Outcome')
-plt.ylabel('BloodPressure')
+    axes[i].set_xlabel('Outcome')
+    axes[i].set_ylabel(coluna)
 
-# 11.3: Target com SkinThickness
-plt.figure(figsize=(10, 6))
-sb.boxplot(x='Outcome', y='SkinThickness', data=diabetes_df)
-plt.title('SkinThickness')
-plt.xlabel('Outcome')
-plt.ylabel('SkinThickness')
-
-# 11.4: Target com Insulin
-plt.figure(figsize=(10, 6))
-sb.boxplot(x='Outcome', y='Insulin', data=diabetes_df)
-plt.title('Insulin')
-plt.xlabel('Outcome')
-plt.ylabel('Insulin')
-
-# 11.5: Target com BMI
-plt.figure(figsize=(10, 6))
-sb.boxplot(x='Outcome', y='BMI', data=diabetes_df)
-plt.title('BMI')
-plt.xlabel('Outcome')
-plt.ylabel('BMI')
-
-# 11.6: Target com DiabetesPedigreeFunction
-plt.figure(figsize=(10, 6))
-sb.boxplot(x='Outcome', y='DiabetesPedigreeFunction', data=diabetes_df)
-plt.title('DiabetesPedigreeFunction')
-plt.xlabel('Outcome')
-plt.ylabel('DiabetesPedigreeFunction')
-
-# 11.7: Exibição dos Gráficos
-plt.show()
+# 11.3: Se sobrarem subplots vazios, remover
+for j in range(len(colunas), len(axes)):
+    fig.delaxes(axes[j])
 
 # Etapa 12: Treinamento do Modelo com o Dataframe
 print('Etapa 12: Treinamento do Modelo com o Dataframe\n')
@@ -205,6 +173,9 @@ for col in invalid_columns:
     zeros = (diabetes_df[col] == 0).sum()
     total = diabetes_df.shape[0]
     print(f'{col}: {zeros} valores inválidos ({(zeros / total) * 100:.2f}%)')
+
+# Contagem da Target
+print(f'\nContagem da Target: \n{diabetes_df['Outcome'].value_counts()}\n')
 
 # Etapa 17: Undersample do Dataset
 print('\nEtapa 17: Undersample do Dataset\n')
@@ -317,8 +288,8 @@ diabetes_df_oversampled = diabetes_df_oversampled.sample(
 ).reset_index(drop=True)
 
 # 21.4: Análise dos dados com o tratamento
-print(f'Análise do Dataframe Undersampled: \n{diabetes_df_undersampled.describe()}')
-print(f'Contagem da Target: \n{diabetes_df_undersampled['Outcome'].value_counts()}\n')
+print(f'Análise do Dataframe Oversampled: \n{diabetes_df_oversampled.describe()}')
+print(f'Contagem da Target: \n{diabetes_df_oversampled['Outcome'].value_counts()}\n')
 
 # 21.5: Treinamento do Modelo Oversampled
 y = diabetes_df_oversampled['Outcome']
