@@ -58,7 +58,8 @@
 
 ### 5. Observações
 - Certifique-se de que o dataset `datasets/diabetes.csv` existe na pasta indicada.
-- No Windows/PowerShell, se houver bloqueio ao ativar o ambiente virtual, execute (como administrador):
+- No Windows/PowerShell, se houver bloqueio ao ativar o ambiente virtual, execute (como administrador):  
+
   ```powershell
   Set-ExecutionPolicy RemoteSigned
   ```
