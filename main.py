@@ -75,7 +75,6 @@ axes = axes.flatten()  # Facilita indexar
 # 11.2: Loop para criar cada boxplot
 for i, coluna in enumerate(colunas):
     sb.boxplot(x='Outcome', y=coluna, data=diabetes_df, ax=axes[i])
-
     axes[i].set_xlabel('Outcome')
     axes[i].set_ylabel(coluna)
 
