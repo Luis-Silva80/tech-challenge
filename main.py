@@ -3,12 +3,16 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sb
+
+# import pygame
 from sklearn.model_selection import train_test_split
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import accuracy_score, confusion_matrix, classification_report
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.model_selection import cross_val_score
+
+# from pygame.locals import *
 
 # Etapa 2: Importando a base
 diabetes_df = pd.read_csv("./datasets/diabetes.csv")
@@ -35,21 +39,23 @@ diabetes_df = diabetes_df.astype(float)
 
 # Etapa 7: Análise de dados de acordo gravidez e idade
 # print('Etapa 7: Análise de dados de acordo gravidez e idade\n')
-preg_min = diabetes_df['Pregnancies'].min()
-preg_max = diabetes_df['Pregnancies'].max()
+preg_min = diabetes_df["Pregnancies"].min()
+preg_max = diabetes_df["Pregnancies"].max()
 # print(f'Menor parteira: \n{diabetes_df[diabetes_df['Pregnancies'] == preg_min].iloc[0]}\n')
 # print(f'Maior parteira: \n{diabetes_df[diabetes_df['Pregnancies'] == preg_max].iloc[0]}\n')
 
-age_min = diabetes_df['Age'].min()
-age_max = diabetes_df['Age'].max()
+age_min = diabetes_df["Age"].min()
+age_max = diabetes_df["Age"].max()
 # print(f'Menor idade:\n{diabetes_df[diabetes_df['Age'] == age_min].iloc[0]}\n')
 # print(f'Maior idade: \n{diabetes_df[diabetes_df['Age'] == age_max].iloc[0]}\n')
 
 # Etapa 8: Analisando correlação dos dados
 # print('Etapa 8: Analisando correlação dos dados\n')
-correlation_matrix = diabetes_df.select_dtypes(include=['float64', 'int']).corr().round(2)
+correlation_matrix = (
+    diabetes_df.select_dtypes(include=["float64", "int"]).corr().round(2)
+)
 fig, ax = plt.subplots(figsize=(8, 8))
-sb.heatmap(data=correlation_matrix, annot=True, linewidths=.5, ax=ax)
+sb.heatmap(data=correlation_matrix, annot=True, linewidths=0.5, ax=ax)
 # plt.show()
 
 # Etapa 9: Análise do gráfico de dispersão dos casos de diabetes de acordo com a Idade
@@ -66,7 +72,15 @@ sb.heatmap(data=correlation_matrix, annot=True, linewidths=.5, ax=ax)
 # plt.show()
 
 # Etapa 11: Análise Boxplot do Target com as colunas
-colunas = ['Pregnancies', 'Glucose', 'BloodPressure', 'SkinThickness', 'Insulin', 'BMI', 'DiabetesPedigreeFunction']
+colunas = [
+    "Pregnancies",
+    "Glucose",
+    "BloodPressure",
+    "SkinThickness",
+    "Insulin",
+    "BMI",
+    "DiabetesPedigreeFunction",
+]
 
 # 11.1: Criar figura e eixos
 fig, axes = plt.subplots(3, 3, figsize=(15, 10))  # 3 linhas x 3 colunas
@@ -74,8 +88,8 @@ axes = axes.flatten()  # Facilita indexar
 
 # 11.2: Loop para criar cada boxplot
 for i, coluna in enumerate(colunas):
-    sb.boxplot(x='Outcome', y=coluna, data=diabetes_df, ax=axes[i])
-    axes[i].set_xlabel('Outcome')
+    sb.boxplot(x="Outcome", y=coluna, data=diabetes_df, ax=axes[i])
+    axes[i].set_xlabel("Outcome")
     axes[i].set_ylabel(coluna)
 
 # 11.3: Se sobrarem subplots vazios, remover
@@ -84,9 +98,11 @@ for j in range(len(colunas), len(axes)):
 
 # Etapa 12: Treinamento do Modelo com o Dataframe
 # print('Etapa 12: Treinamento do Modelo com o Dataframe\n')
-y = diabetes_df['Outcome']
-x = diabetes_df.drop('Outcome', axis=1)
-x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.2, random_state=42, stratify=y)
+y = diabetes_df["Outcome"]
+x = diabetes_df.drop("Outcome", axis=1)
+x_train, x_test, y_train, y_test = train_test_split(
+    x, y, test_size=0.2, random_state=42, stratify=y
+)
 
 # Etapa: 13 Análise com KNN
 # print('Etapa: 13 Análise com KNN\n')
@@ -149,13 +165,7 @@ predict_random_forest = random_forest_model.predict(x_test)
 
 # Etapa 16: Identificar colunas com valores inválidos
 # print('Etapa 16: Identificar colunas com valores inválidos\n')
-invalid_columns = [
-    'Glucose',
-    'BloodPressure',
-    'SkinThickness',
-    'Insulin',
-    'BMI'
-]
+invalid_columns = ["Glucose", "BloodPressure", "SkinThickness", "Insulin", "BMI"]
 
 # 16.1: Colunas com valores inválidos
 # print('\nColunas com valores inválidos')
@@ -178,19 +188,20 @@ for col in invalid_columns:
 
 # Etapa 17: Undersample do Dataset
 # print('\nEtapa 17: Undersample do Dataset\n')
-class_no_diabetes = diabetes_df[diabetes_df['Outcome'] == 0]
-class_has_diabetes = diabetes_df[diabetes_df['Outcome'] == 1]
+class_no_diabetes = diabetes_df[diabetes_df["Outcome"] == 0]
+class_has_diabetes = diabetes_df[diabetes_df["Outcome"] == 1]
 
 # 17.1: Undersample da classe 0 para ter o mesmo número de registros da classe 1
-class_no_diabetes_under = class_no_diabetes.sample(len(class_has_diabetes), random_state=42)
+class_no_diabetes_under = class_no_diabetes.sample(
+    len(class_has_diabetes), random_state=42
+)
 
 # 17.2: Juntar as duas classes balanceadas
 diabetes_df_undersampled = pd.concat([class_no_diabetes_under, class_has_diabetes])
 
 # 17.3: Embaralhar os dados dentro dataset
 diabetes_df_undersampled = diabetes_df_undersampled.sample(
-    frac=1,
-    random_state=42
+    frac=1, random_state=42
 ).reset_index(drop=True)
 
 # 17.4: Análise dos dados com o tratamento
@@ -198,14 +209,10 @@ diabetes_df_undersampled = diabetes_df_undersampled.sample(
 # print(f'Contagem da Target: \n{diabetes_df_undersampled['Outcome'].value_counts()}\n')
 
 # 17.5: Treinamento do Modelo Undersampled
-y = diabetes_df_undersampled['Outcome']
-x = diabetes_df_undersampled.drop('Outcome', axis=1)
+y = diabetes_df_undersampled["Outcome"]
+x = diabetes_df_undersampled.drop("Outcome", axis=1)
 x_train, x_test, y_train, y_test = train_test_split(
-    x,
-    y,
-    test_size=0.2,
-    random_state=42,
-    stratify=y
+    x, y, test_size=0.2, random_state=42, stratify=y
 )
 
 # Etapa: 18 Análise com KNN
@@ -272,18 +279,17 @@ predict_random_forest = random_forest_model.predict(x_test)
 
 # 21.1: Oversample da classe 1 para ter o mesmo numero de registros da classe 0
 class_has_diabetes_over = class_has_diabetes.sample(
-    len(class_no_diabetes),
-    random_state=42,
-    replace=True
+    len(class_no_diabetes), random_state=42, replace=True
 )
 
 # 21.2: Juntar as duas classes balanceadas
-diabetes_df_oversampled = pd.concat([class_no_diabetes, class_has_diabetes_over], axis=0)
+diabetes_df_oversampled = pd.concat(
+    [class_no_diabetes, class_has_diabetes_over], axis=0
+)
 
 # 21.3: Embaralhar os dados dentro dataset
 diabetes_df_oversampled = diabetes_df_oversampled.sample(
-    frac=1,
-    random_state=42
+    frac=1, random_state=42
 ).reset_index(drop=True)
 
 # 21.4: Análise dos dados com o tratamento
@@ -291,14 +297,10 @@ diabetes_df_oversampled = diabetes_df_oversampled.sample(
 # print(f'Contagem da Target: \n{diabetes_df_oversampled['Outcome'].value_counts()}\n')
 
 # 21.5: Treinamento do Modelo Oversampled
-y = diabetes_df_oversampled['Outcome']
-x = diabetes_df_oversampled.drop('Outcome', axis=1)
+y = diabetes_df_oversampled["Outcome"]
+x = diabetes_df_oversampled.drop("Outcome", axis=1)
 x_train, x_test, y_train, y_test = train_test_split(
-    x,
-    y,
-    test_size=0.2,
-    random_state=42,
-    stratify=y
+    x, y, test_size=0.2, random_state=42, stratify=y
 )
 
 # Etapa 22: Análise com KNN
@@ -362,16 +364,32 @@ predict_random_forest = random_forest_model.predict(x_test)
 
 # Etapa 25: Testando validação cruzada
 # print('Etapa 25: Testando validação cruzada\n')
-scores = cross_val_score(random_forest_model, x, y, cv=10, scoring='accuracy')
+scores = cross_val_score(random_forest_model, x, y, cv=10, scoring="accuracy")
 
 # 25.1: Scores da validação cruzada
-# print("Scores da validação cruzada (10 folds):")
-# print(scores)
+print("Scores da validação cruzada (10 folds):")
+print(scores)
 
 # 25.2: Média da validação
-# print(f'Média da validação: {scores.mean()}')
+print(f"Média da validação: {scores.mean()}")
 
+# 26: Tranformando hiper-parametros em array
+hiper_params_array = random_forest_model.get_params()
+print(f"Array dos parametros: {hiper_params_array}")
 # ----------- FASE 2 ---------------
-#26 Tranformando hiper-parametros em array
-hiper_params_array = list(random_forest_model.get_params().values())
-print(f'Array dos parametros: {hiper_params_array}')
+
+# 1: Imports das libs de algoritimo genético
+from hiperparams_otimization import run_genetic_algorithm
+
+# 2: Rodar Algoritimo de otimização dos hiper-parametros
+run_genetic_algorithm(
+    model=random_forest_model,
+    x_train=x_train,
+    x_test=x_test,
+    y_train=y_train,
+    y_test=y_test,
+    x_initial=x,
+    y_initial=y,
+    cv=10,
+    scoring="acuracy"
+)
