@@ -58,8 +58,8 @@ def calculate_fitness_ml(model, x_train, y_train, x_test, y_test, x_initial, y_i
     model.fit(x_train, y_train)
     predict_model = model.predict(x_test)
 
-    scores = cross_val_score(model, x_initial, y_initial, cv, scoring)
-    scores.mean()
+    scores = cross_val_score(model, X=x_initial, y=y_initial, cv=cv, scoring=scoring)
+    return scores.mean()
 
 def order_crossover(
     parent1: List[Tuple[float, float]], parent2: List[Tuple[float, float]]
@@ -204,9 +204,10 @@ def sort_population_ml(
     Tuple[List[List[Tuple[float, float]]], List[float]]: A tuple containing the sorted population and corresponding sorted fitness values.
     """
     # Combine lists into pairs
-    combined_lists = list(population, fitness)
+    combined_lists = list(zip(population, fitness))
 
     # Sort based on the values of the fitness list
-    sorted_combined_lists = sorted(combined_lists, key=lambda x: x[1])
+    sorted_combined_lists = sorted(combined_lists, key=lambda x: x[1], reverse=True)
 
-    return sorted_combined_lists
+    sorted_population, sorted_fitness = zip(*sorted_combined_lists)
+    return sorted_population, sorted_fitness

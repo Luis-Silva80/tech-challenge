@@ -391,5 +391,5 @@ run_genetic_algorithm(
     x_initial=x,
     y_initial=y,
     cv=10,
-    scoring="acuracy"
+    scoring="accuracy"
 )

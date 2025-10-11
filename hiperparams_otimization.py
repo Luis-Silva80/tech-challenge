@@ -39,9 +39,14 @@ def run_genetic_algorithm(
 
         # screen.fill(WHITE)        
         
-        population_fitness = [calculate_fitness_ml(model, x_train, y_train, x_test, y_test, x_initial, y_initial, cv, scoring) for model in population]
+        # Capturando todas as médias de acurácia da população
+        population_fitness = []
+        for model in population:
+            population_fitness.append(calculate_fitness_ml(model, x_train, y_train, x_test, y_test, x_initial, y_initial, cv, scoring))
 
         population, population_fitness = sort_population_ml(population, population_fitness)
+
+        print(f"population: {population}, population_fitness: {population_fitness}")
 
         # best_fitness = calculate_fitness(population[0])
         # best_solution = population[0]
