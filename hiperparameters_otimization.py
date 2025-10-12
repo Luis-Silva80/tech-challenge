@@ -1,7 +1,11 @@
 # 1: Importação das bibliotecas necessárias
 import itertools
+import random
+import numpy as np
 from genetic_algorithm import (
     calculate_fitness,
+    mutate,
+    order_crossover_ml,
     sort_population,
     gerar_modelos_randomforest
 )
@@ -45,11 +49,12 @@ def run_genetic_algorithm(
         population, population_fitness = sort_population(
             population, population_fitness)
 
-        # best_fitness = calculate_fitness(population[0])
-        # best_solution = population[0]
+        # 2.5 Armazenar os melhores resultados da solução e valor de fitness
+        best_fitness = population_fitness[0]
+        best_solution = population[0]
 
-        # best_fitness_values.append(best_fitness)
-        # best_solutions.append(best_solution)
+        best_fitness_values.append(best_fitness)
+        best_solutions.append(best_solution)
 
         # draw_plot(screen, list(range(len(best_fitness_values))),
         #           best_fitness_values, y_label="Fitness - Distance (pxls)")
@@ -58,28 +63,34 @@ def run_genetic_algorithm(
         # draw_paths(screen, best_solution, BLUE, width=3)
         # draw_paths(screen, population[1], rgb_color=(128, 128, 128), width=1)
 
-        # print(f"Generation {generation}: Best fitness = {round(best_fitness, 2)}")
+        print(f"Generation {generation}: Best fitness = {best_fitness:.12f}")
+        new_population = [population[0]]  # Manter o melhor indivíduo: ELITISMO
 
-        # new_population = [population[0]]  # Keep the best individual: ELITISM
+        while len(new_population) < POPULATION_SIZE:
+            # selection
+            # simple selection based on first 10 best solutions
+            # parent1, parent2 = random.choices(population[:10], k=2)
 
-        # while len(new_population) < POPULATION_SIZE:
+            # solution based on fitness probability
+            probability = 1 / np.array(population_fitness)
+            parent1, parent2 = random.choices(population, weights=probability, k=2)
 
-        # selection
-        # simple selection based on first 10 best solutions
-        # parent1, parent2 = random.choices(population[:10], k=2)
+            dict_parent1: dict = parent1.get_params()
+            dict_parent2: dict = parent2.get_params()
 
-        # solution based on fitness probability
-        # probability = 1 / np.array(population_fitness)
-        # parent1, parent2 = random.choices(population, weights=probability, k=2)
+            list_parent1 = list(dict_parent1.items())
+            list_parent2 = list(dict_parent2.items())
 
-        # child1 = order_crossover(parent1, parent2)
-        # child1 = order_crossover(parent1, parent1)
+            child1 = order_crossover_ml(list_parent1, list_parent2)
+            dict_child: dict = child1.get_params()
+            list_child = list(dict_child.items())
 
-        # child1 = mutate(child1, MUTATION_PROBABILITY)
+            child1 = mutate(list_child, MUTATION_PROBABILITY)
 
-        # new_population.append(child1)
+            new_population.append(child1)
 
-        # population = new_population
+        population = new_population
+
 
         # pygame.display.flip()
         # clock.tick(FPS)

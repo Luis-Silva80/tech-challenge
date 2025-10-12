@@ -1,6 +1,7 @@
 import random
 import copy
 from typing import List, Tuple
+from sklearn.metrics import accuracy_score
 from sklearn.model_selection import cross_val_score
 from sklearn.ensemble import RandomForestClassifier
 
@@ -17,10 +18,10 @@ def gerar_modelos_randomforest(best_model):
     modelos = [best_model]
 
     for _ in range(4):
-        n_estimators = random.randint(50, 200)        # Número de árvores
-        max_depth = random.choice([None] + list(range(5, 21)))  # Profundidade ou None
-        max_features = random.choice(['sqrt', 'log2', None])    # Número de features
-        max_samples = random.choice([None, 0.5, 0.7, 0.9])      # Fração de amostras (ou None)
+        n_estimators = random.randint(50, 200) # Número de árvores
+        max_depth = random.randint(5, 21) # Profundidade ou None
+        max_features = random.choice(['sqrt', 'log2']) # Número de features
+        max_samples = random.choice([0.5, 0.7, 0.9]) # Fração de amostras (ou None)
 
         modelo = RandomForestClassifier(
             n_estimators=n_estimators,
@@ -45,10 +46,13 @@ def calculate_fitness(model, x_train, y_train, x_test, y_test, x_initial, y_init
     float: A média acurácia.
     """
     model.fit(x_train, y_train)
-    scores = cross_val_score(model, X=x_initial, y=y_initial, cv=cv, scoring=scoring)
-    return scores.mean()
+    predict = model.predict(x_test)
 
-# NOTE: entender uso do order_crossover em nossa lógica
+    # scores = cross_val_score(model, X=x_initial, y=y_initial, cv=cv, scoring=scoring, n_jobs=-1)
+    # return scores.mean()
+
+    return accuracy_score(y_test, predict)
+
 def order_crossover(
     parent1: List[Tuple[float, float]], parent2: List[Tuple[float, float]]
 ) -> List[Tuple[float, float]]:
@@ -82,6 +86,42 @@ def order_crossover(
 
     return child
 
+def order_crossover_ml(parent1, parent2) -> List:
+    """
+    Perform order crossover (OX) between two parent sequences to create a child sequence.
+
+    Parameters:
+    - parent1 (List[Tuple[float, float]]): The first parent sequence.
+    - parent2 (List[Tuple[float, float]]): The second parent sequence.
+
+    Returns:
+    List[Tuple[float, float]]: The child sequence resulting from the order crossover.
+    """
+    length = len(parent1)
+
+    # Choose two random indices for the crossover
+    start_index = random.randint(0, length - 1)
+    end_index = random.randint(start_index + 1, length)
+
+    # Initialize the child with a copy of the substring from parent1
+    child = parent1[start_index:end_index]
+
+    # Fill in the remaining positions with genes from parent2
+    remaining_positions = [
+        i for i in range(length) if i < start_index or i >= end_index
+    ]
+
+    child_param_names = {name for name, _ in child}
+    remaining_genes = [gene for gene in parent2 if gene[0] not in child_param_names]
+
+    for position, gene in zip(remaining_positions, remaining_genes):
+        child.insert(position, gene)
+
+    child_dict = dict(child)
+    child_model = RandomForestClassifier(**child_dict)
+
+    return child_model
+
 # NOTE: entender necessidade de uso do mutate em nossa lógica
 def mutate(
     solution: List[Tuple[float, float]], mutation_probability: float
@@ -114,7 +154,10 @@ def mutate(
             solution[index],
         )
 
-    return mutated_solution
+    mutated_child_dict = dict(mutated_solution)
+    mutated_child_model = RandomForestClassifier(**mutated_child_dict)
+
+    return mutated_child_model
 
 def sort_population(
     population, fitness
