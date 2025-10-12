@@ -12,7 +12,7 @@ def gerar_modelos_randomforest(best_model):
     Parâmetros:
     - (best_model): Melhor modelo encontrado nos testes
 
-    Returns:
+    Retorno:
     Lista com todos os cinco modelos.
     """
     modelos = [best_model]
@@ -42,118 +42,90 @@ def calculate_fitness(model, x_train, y_train, x_test, y_test, x_initial, y_init
     Parâmetros:
     - (model, x_train, y_train, x_test, y_test, x_initial, y_initial, cv, scoring): Todos os parâmetros do modelo usado.
 
-    Returns:
+    Retorno:
     float: A média acurácia.
     """
     model.fit(x_train, y_train)
     predict = model.predict(x_test)
 
-    # scores = cross_val_score(model, X=x_initial, y=y_initial, cv=cv, scoring=scoring, n_jobs=-1)
-    # return scores.mean()
+    # NOTE: Retorno do cálculo de fitness pelo valor de acurácia
+    # return accuracy_score(y_test, predict)
 
-    return accuracy_score(y_test, predict)
+    scores = cross_val_score(model, X=x_initial, y=y_initial, cv=cv, scoring=scoring, n_jobs=-1)
+    return scores.mean()
 
-def order_crossover(
-    parent1: List[Tuple[float, float]], parent2: List[Tuple[float, float]]
-) -> List[Tuple[float, float]]:
+
+def order_crossover(parent1, parent2) -> List:
     """
-    Perform order crossover (OX) between two parent sequences to create a child sequence.
+    Executa o algoritmo de cruzamento por ordenação (OX) entre dois pais sequenciais para criar a sequência de um filho.
 
-    Parameters:
-    - parent1 (List[Tuple[float, float]]): The first parent sequence.
-    - parent2 (List[Tuple[float, float]]): The second parent sequence.
+    Parâmetros:
+    - parent1: A sequência do primeiro pai.
+    - parent2: A sequência do segundo pai.
 
-    Returns:
-    List[Tuple[float, float]]: The child sequence resulting from the order crossover.
-    """
-    length = len(parent1)
-
-    # Choose two random indices for the crossover
-    start_index = random.randint(0, length - 1)
-    end_index = random.randint(start_index + 1, length)
-
-    # Initialize the child with a copy of the substring from parent1
-    child = parent1[start_index:end_index]
-
-    # Fill in the remaining positions with genes from parent2
-    remaining_positions = [
-        i for i in range(length) if i < start_index or i >= end_index
-    ]
-    remaining_genes = [gene for gene in parent2 if gene not in child]
-
-    for position, gene in zip(remaining_positions, remaining_genes):
-        child.insert(position, gene)
-
-    return child
-
-def order_crossover_ml(parent1, parent2) -> List:
-    """
-    Perform order crossover (OX) between two parent sequences to create a child sequence.
-
-    Parameters:
-    - parent1 (List[Tuple[float, float]]): The first parent sequence.
-    - parent2 (List[Tuple[float, float]]): The second parent sequence.
-
-    Returns:
-    List[Tuple[float, float]]: The child sequence resulting from the order crossover.
+    Retorno:
+    A sequência do filho resultante do cruzamento por ordenação.
     """
     length = len(parent1)
 
-    # Choose two random indices for the crossover
+    # Escolha entre dois índices aleatórios para o cruzamento
     start_index = random.randint(0, length - 1)
     end_index = random.randint(start_index + 1, length)
 
-    # Initialize the child with a copy of the substring from parent1
+    # Inicialização do filho com a cópia da substring do primeiro pai
     child = parent1[start_index:end_index]
 
-    # Fill in the remaining positions with genes from parent2
+    # Preenchimento das posições restantes com os genes do segundo pai
     remaining_positions = [
         i for i in range(length) if i < start_index or i >= end_index
     ]
 
+    # Busca dos genes restantes para o filho
     child_param_names = {name for name, _ in child}
     remaining_genes = [gene for gene in parent2 if gene[0] not in child_param_names]
 
+    # Looping para inserção dos genes no novo indivíduo
     for position, gene in zip(remaining_positions, remaining_genes):
         child.insert(position, gene)
 
+    # Dicionário e modelo do filho
     child_dict = dict(child)
     child_model = RandomForestClassifier(**child_dict)
 
     return child_model
 
-# NOTE: entender necessidade de uso do mutate em nossa lógica
 def mutate(
     solution: List[Tuple[float, float]], mutation_probability: float
 ) -> List[Tuple[float, float]]:
     """
-    Mutate a solution by inverting a segment of the sequence with a given mutation probability.
+    Mutação da solução invertendo o segmento da sequência de valores de acordo com a probabilidade de mutação.
 
-    Parameters:
-    - solution (List[int]): The solution sequence to be mutated.
-    - mutation_probability (float): The probability of mutation for each individual in the solution.
+    Parâmetros:
+    - solution: A sequência de valores da solução a sofrer mutação.
+    - mutation_probability: A probabilidade de mutação para cada indivíduo.
 
-    Returns:
-    List[int]: The mutated solution sequence.
+    Retorno:
+    A sequência de valores com a mutação aplicada.
     """
     mutated_solution = copy.deepcopy(solution)
 
-    # Check if mutation should occur
+    # Checar se a mutação deve ocorrer
     if random.random() < mutation_probability:
 
-        # Ensure there are at least two cities to perform a swap
+        # Garantir que tenha pelo menos dois indivíduos para a troca.
         if len(solution) < 2:
             return solution
 
-        # Select a random index (excluding the last index) for swapping
+        # Seleciona um índice aleatório (exceto pelo último índice) para a troca
         index = random.randint(0, len(solution) - 2)
 
-        # Swap the cities at the selected index and the next index
+        # Troca do índice selecionado pelo próximo índice
         mutated_solution[index], mutated_solution[index + 1] = (
             solution[index + 1],
             solution[index],
         )
 
+    # Dicionário e modelo do filho
     mutated_child_dict = dict(mutated_solution)
     mutated_child_model = RandomForestClassifier(**mutated_child_dict)
 
