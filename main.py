@@ -373,10 +373,6 @@ print(scores)
 # 25.2: Média da validação
 print(f"Média da validação: {scores.mean()}")
 
-# 26: Tranformando hiper-parametros em array
-hiper_params_array = random_forest_model.get_params()
-print(f"Array dos parametros: {hiper_params_array}")
-
 # ----------- FASE 2 ---------------
 # 1: Imports das libs de algoritmo genético
 from hiperparameters_otimization import run_genetic_algorithm
