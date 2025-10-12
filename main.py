@@ -376,12 +376,12 @@ print(f"Média da validação: {scores.mean()}")
 # 26: Tranformando hiper-parametros em array
 hiper_params_array = random_forest_model.get_params()
 print(f"Array dos parametros: {hiper_params_array}")
+
 # ----------- FASE 2 ---------------
+# 1: Imports das libs de algoritmo genético
+from hiperparameters_otimization import run_genetic_algorithm
 
-# 1: Imports das libs de algoritimo genético
-from hiperparams_otimization import run_genetic_algorithm
-
-# 2: Rodar Algoritimo de otimização dos hiper-parametros
+# 2: Rodar algoritmo de otimização dos hiper-parametros
 run_genetic_algorithm(
     model=random_forest_model,
     x_train=x_train,

@@ -1,11 +1,19 @@
 import random
-import math
 import copy
 from typing import List, Tuple
 from sklearn.model_selection import cross_val_score
 from sklearn.ensemble import RandomForestClassifier
 
 def gerar_modelos_randomforest(best_model):
+    """
+    Gera novos modelos random forest para a população inicial
+
+    Parâmetros:
+    - (best_model): Melhor modelo encontrado nos testes
+
+    Returns:
+    Lista com todos os cinco modelos.
+    """
     modelos = [best_model]
 
     for _ in range(4):
@@ -19,48 +27,28 @@ def gerar_modelos_randomforest(best_model):
             max_depth=max_depth,
             max_features=max_features,
             max_samples=max_samples,
-            random_state=random.randint(0, 10000)  # Para reprodutibilidade
+            random_state=random.randint(0, 10000)
         )
 
         modelos.append(modelo)
 
     return modelos
 
-def calculate_fitness(path: List[Tuple[float, float]]) -> float:
+def calculate_fitness(model, x_train, y_train, x_test, y_test, x_initial, y_initial, cv, scoring) -> float:
     """
-    Calculate the fitness of a given path based on the total Euclidean distance.
+    Calcula o fitness de um modelo de Machine Learning baseado no cross_val_score do modelo.
 
-    Parameters:
-    - path (List[Tuple[float, float]]): A list of tuples representing the path,
-      where each tuple contains the coordinates of a point.
+    Parâmetros:
+    - (model, x_train, y_train, x_test, y_test, x_initial, y_initial, cv, scoring): Todos os parâmetros do modelo usado.
 
     Returns:
-    float: The total Euclidean distance of the path.
-    """
-    # distance = 0
-    # n = len(path)
-    # for i in range(n):
-    #     distance += calculate_distance(path[i], path[(i + 1) % n])
-
-    # return distance
-
-
-def calculate_fitness_ml(model, x_train, y_train, x_test, y_test, x_initial, y_initial, cv, scoring) -> float:
-    """
-    Calculates the fitness of a Machine Learning model based on the model's cross_val_score.
-
-    Parameters:
-    - (model, x_train, y_train, x_test, y_test, x_initial, y_initial, cv, scoring): All parameters of the model used.
-
-    Returns:
-    float: The average accuracy
+    float: A média acurácia.
     """
     model.fit(x_train, y_train)
-    predict_model = model.predict(x_test)
-
     scores = cross_val_score(model, X=x_initial, y=y_initial, cv=cv, scoring=scoring)
     return scores.mean()
 
+# NOTE: entender uso do order_crossover em nossa lógica
 def order_crossover(
     parent1: List[Tuple[float, float]], parent2: List[Tuple[float, float]]
 ) -> List[Tuple[float, float]]:
@@ -94,34 +82,7 @@ def order_crossover(
 
     return child
 
-
-### demonstration: crossover test code
-# Example usage:
-# parent1 = [(1, 1), (2, 2), (3, 3), (4,4), (5,5), (6, 6)]
-# parent2 = [(6, 6), (5, 5), (4, 4), (3, 3),  (2, 2), (1, 1)]
-
-# # parent1 = [1, 2, 3, 4, 5, 6]
-# # parent2 = [6, 5, 4, 3, 2, 1]
-
-
-# child = order_crossover(parent1, parent2)
-# print("Parent 1:", [0, 1, 2, 3, 4, 5, 6, 7, 8])
-# print("Parent 1:", parent1)
-# print("Parent 2:", parent2)
-# print("Child   :", child)
-
-
-# # Example usage:
-# population = generate_random_population(5, 10)
-
-# print(calculate_fitness(population[0]))
-
-
-# population = [(random.randint(0, 100), random.randint(0, 100))
-#           for _ in range(3)]
-
-
-# TODO: implement a mutation_intensity and invert pieces of code instead of just swamping two.
+# NOTE: entender necessidade de uso do mutate em nossa lógica
 def mutate(
     solution: List[Tuple[float, float]], mutation_probability: float
 ) -> List[Tuple[float, float]]:
@@ -155,58 +116,23 @@ def mutate(
 
     return mutated_solution
 
-
-### Demonstration: mutation test code
-# # Example usage:
-# original_solution = [(1, 1), (2, 2), (3, 3), (4, 4)]
-# mutation_probability = 1
-
-# mutated_solution = mutate(original_solution, mutation_probability)
-# print("Original Solution:", original_solution)
-# print("Mutated Solution:", mutated_solution)
-
-
 def sort_population(
-    population: List[List[Tuple[float, float]]], fitness: List[float]
-) -> Tuple[List[List[Tuple[float, float]]], List[float]]:
-    """
-    Sort a population based on fitness values.
-
-    Parameters:
-    - population (List[List[Tuple[float, float]]]): The population of solutions, where each solution is represented as a list.
-    - fitness (List[float]): The corresponding fitness values for each solution in the population.
-
-    Returns:
-    Tuple[List[List[Tuple[float, float]]], List[float]]: A tuple containing the sorted population and corresponding sorted fitness values.
-    """
-    # Combine lists into pairs
-    combined_lists = list(zip(population, fitness))
-
-    # Sort based on the values of the fitness list
-    sorted_combined_lists = sorted(combined_lists, key=lambda x: x[1])
-
-    # Separate the sorted pairs back into individual lists
-    sorted_population, sorted_fitness = zip(*sorted_combined_lists)
-
-    return sorted_population, sorted_fitness
-
-def sort_population_ml(
     population, fitness
 ) -> List:
     """
-    Sort a population based on fitness values.
+    Ordena a população baseado nos valores de fitness
 
-    Parameters:
-    - population (List[List[Tuple[float, float]]]): The population of solutions, where each solution is represented as a list.
-    - fitness (List[float]): The corresponding fitness values for each solution in the population.
+    Parâmetros:
+    - population: A população de soluções, onde cada solução é representada como uma lista.
+    - fitness: Os valores de fitness correspondentes para cada solução na população.
 
-    Returns:
-    Tuple[List[List[Tuple[float, float]]], List[float]]: A tuple containing the sorted population and corresponding sorted fitness values.
+    Retorno:
+    A população ordenada com os valores de fitness correspondentes
     """
-    # Combine lists into pairs
+    # Combinação das listas em pares
     combined_lists = list(zip(population, fitness))
 
-    # Sort based on the values of the fitness list
+    # Ordenação baseada na lista de valores fitness
     sorted_combined_lists = sorted(combined_lists, key=lambda x: x[1], reverse=True)
 
     sorted_population, sorted_fitness = zip(*sorted_combined_lists)
