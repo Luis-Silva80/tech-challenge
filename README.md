@@ -1,11 +1,16 @@
-## Tech-Challenge (1ª Fase)
+## Tech-Challenge (2ª Fase)
+
+### Otimização dos hiperparâmetros da 1ª Fase com Algoritmo Genético
 
 ### 1. Alunos (6IADT)
 - Luis Gustavo de Araújo Silva — RM 366233  
 - Vinicius Santos de Oliveira — RM 366276
 
-### 2. Script principal & Dataset
-- **Script:** `main.py`  
+### 2. Script principal & dataset
+- **Script principal:** `main.py`  
+- **Otimização dos hiperparêmtros:** `hiperparameters_otimization.py`
+- **Funções do algoritmo genético:** `genetic_algorithm.py`
+- **Plot de gráfico do algoritmo:** `draw_functions.py`
 - **Dataset:** `datasets/diabetes.csv`
 
 ### 3. Bibliotecas utilizadas
@@ -13,7 +18,8 @@
 - numpy  
 - matplotlib  
 - seaborn  
-- scikit-learn  
+- scikit-learn
+- pygame
 
 ### 4. Passo a passo para instalação
 

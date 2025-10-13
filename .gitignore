@@ -1,2 +1,4 @@
 # bibliotecas do python
 env
+.vscode
+__pycache__
