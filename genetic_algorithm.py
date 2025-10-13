@@ -5,6 +5,12 @@ from sklearn.metrics import accuracy_score
 from sklearn.model_selection import cross_val_score
 from sklearn.ensemble import RandomForestClassifier
 
+# Cache global
+fitness_cache = {}
+
+# Para detectar mudança de dataset
+last_data_shape = None  
+
 def gerar_modelos_randomforest(best_model):
     """
     Gera novos modelos random forest para a população inicial
@@ -18,16 +24,21 @@ def gerar_modelos_randomforest(best_model):
     modelos = [best_model]
 
     for _ in range(4):
-        n_estimators = random.randint(50, 200) # Número de árvores
-        max_depth = random.randint(5, 21) # Profundidade ou None
-        max_features = random.choice(['sqrt', 'log2']) # Número de features
-        max_samples = random.choice([0.5, 0.7, 0.9]) # Fração de amostras (ou None)
+        # Número de árvores
+        n_estimators = random.randint(50, 200)
+        # Profundidade
+        max_depth = random.randint(5, 21)
+        # Número de features
+        max_features = random.choice(['sqrt', 'log2'])
+        # Fração de amostras
+        max_samples = random.choice([0.5, 0.7, 0.9])
 
         modelo = RandomForestClassifier(
             n_estimators=n_estimators,
             max_depth=max_depth,
             max_features=max_features,
             max_samples=max_samples,
+            n_jobs=1,
             random_state=random.randint(0, 10000)
         )
 
@@ -45,15 +56,44 @@ def calculate_fitness(model, x_train, y_train, x_test, y_test, x_initial, y_init
     Retorno:
     float: A média acurácia.
     """
-    model.fit(x_train, y_train)
-    predict = model.predict(x_test)
+    global fitness_cache, last_data_shape
 
+    # Verifica se o dataset mudou — se sim, limpa o cache
+    current_shape = (x_initial.shape, y_initial.shape)
+    if last_data_shape is None or current_shape != last_data_shape:
+        fitness_cache.clear()
+        last_data_shape = current_shape
+
+    # Cria uma chave única com os hiperparâmetros do modelo
+    key = tuple(sorted(model.get_params().items()))
+
+    # Se o fitness já foi calculado para esse modelo, apenas refaz o fit e retorna o valor do cache
+    if key in fitness_cache:
+        model.fit(x_train, y_train)
+        return fitness_cache[key]
+
+    # Caso contrário, faz o fit e calcula o fitness normalmente
+    model.fit(x_train, y_train)
+
+    scores = cross_val_score(
+        model,
+        X=x_initial,
+        y=y_initial,
+        cv=cv,
+        scoring=scoring,
+        n_jobs=-1
+    )
+    mean_score = scores.mean()
+
+    # Guarda o resultado no cache
+    fitness_cache[key] = mean_score
+    
     # NOTE: Retorno do cálculo de fitness pelo valor de acurácia
+    # predict = model.predict(x_test)
     # return accuracy_score(y_test, predict)
 
-    scores = cross_val_score(model, X=x_initial, y=y_initial, cv=cv, scoring=scoring, n_jobs=-1)
-    return scores.mean()
-
+    # Retorna a média fitness
+    return mean_score
 
 def order_crossover(parent1, parent2) -> List:
     """
