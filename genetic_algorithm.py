@@ -11,7 +11,7 @@ fitness_cache = {}
 # Para detectar mudança de dataset
 last_data_shape = None  
 
-def gerar_modelos_randomforest(best_model):
+def generate_randomforest_models(best_model):
     """
     Gera novos modelos random forest para a população inicial
 

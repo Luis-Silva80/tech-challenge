@@ -10,13 +10,12 @@ from genetic_algorithm import (
     mutate,
     order_crossover,
     sort_population,
-    gerar_modelos_randomforest
+    generate_randomforest_models
 )
 
 # Inicializando as variaveis de controle
 generation_counter = itertools.count(start=1)
 best_fitness_values = []
-best_solutions = []
 POPULATION_SIZE = 10
 MUTATION_PROBABILITY = 0.5
 
@@ -35,7 +34,7 @@ def run_genetic_algorithm(
 ):
 
     # Geração da população inicial
-    population = gerar_modelos_randomforest(model)
+    population = generate_randomforest_models(model)
 
     # Lógica para o algoritmo rodar interminavelmente
     running = True
@@ -61,13 +60,11 @@ def run_genetic_algorithm(
         population, population_fitness = sort_population(
             population, population_fitness)
 
-        # Armazenar os melhores resultados da solução e valor de fitness
+        # Armazenar os melhores resultados do valor de fitness
         best_fitness = population_fitness[0]
-        best_solution = population[0]
 
         # Armazenar os melhores resultados encontrados para distribuição em gráfico
         best_fitness_values.append(best_fitness)
-        best_solutions.append(best_solution)
 
         # Atualizar o gráfico
         generations = list(range(1, len(best_fitness_values) + 1))
