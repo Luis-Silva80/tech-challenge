@@ -371,7 +371,7 @@ print(f"\nScores da validação cruzada (10 folds):")
 print(scores)
 
 # 25.2: Média da validação
-print(f"\nMédia da validação: {scores.mean()}")
+print(f"\nMédia da validação: {scores.mean()}\n")
 
 # ----------- FASE 2 ---------------
 # 1: Imports das libs de algoritmo genético

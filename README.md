@@ -11,6 +11,7 @@
 - **Otimização dos hiperparêmtros:** `hiperparameters_otimization.py`
 - **Funções do algoritmo genético:** `genetic_algorithm.py`
 - **Plot de gráfico do algoritmo:** `draw_functions.py`
+- **Testes automatizados do cálculo de fitness:** `test_calculate_fitness.py`
 - **Dataset:** `datasets/diabetes.csv`
 
 ### 3. Bibliotecas utilizadas
